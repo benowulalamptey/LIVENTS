@@ -1,0 +1,16 @@
+name: Livents Android
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Confirm android workflow
+        run: echo "Livents Android workflow placeholder"
