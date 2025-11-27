@@ -1,0 +1,16 @@
+name: Livents Web
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Confirm web workflow
+        run: echo "Livents Web workflow placeholder"
