@@ -1,1 +1,12 @@
-{ "name": "livents-server", "version": "1.0.0" }
+{
+  "name": "Livents-server",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.mjs",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
