@@ -1,1 +1,222 @@
-<html><body><h1>Livents Viewer</h1></body></html>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Viewer v17</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+
+    #controls {
+      padding: 8px 12px;
+      background: #111;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+    }
+
+    #controls button {
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid #444;
+      background: #222;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    #controls button.active {
+      background: #3a7bfd;
+      border-color: #3a7bfd;
+    }
+
+    #controls label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    #layout {
+      display: grid;
+      height: calc(100vh - 40px);
+      gap: 4px;
+    }
+
+    .layout-three {
+      grid-template-columns: 60% 40%;
+    }
+
+    .layout-two {
+      grid-template-columns: 70% 30%;
+    }
+
+    #tile-main,
+    #tile-right,
+    .tile {
+      background: #111;
+      border: 1px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    #tile-right {
+      display: grid;
+      gap: 4px;
+    }
+
+    .layout-three #tile-right {
+      grid-template-rows: 1fr 1fr;
+    }
+
+    .layout-two #tile-right {
+      grid-template-rows: 1fr;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .label {
+      font-weight: bold;
+      margin-bottom: 4px;
+      font-size: 13px;
+      color: #ddd;
+    }
+
+    .source {
+      font-size: 12px;
+      color: #aaa;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="controls">
+    <button id="toggleViewBtn">3-view mode</button>
+
+    <label>
+      <input type="checkbox" id="sp1Toggle" />
+      SP1 (Special Picture 1)
+    </label>
+
+    <label>
+      <input type="checkbox" id="sp2Toggle" />
+      SP2 (Special Picture 2)
+    </label>
+  </div>
+
+  <div id="layout" class="layout-three">
+    <div id="tile-main" class="tile">
+      <div>
+        <div class="label">Picture 1 (Admin)</div>
+        <div class="source">Source: Admin feed</div>
+      </div>
+    </div>
+
+    <div id="tile-right">
+      <div id="tile-p2" class="tile">
+        <div>
+          <div class="label">Picture 2</div>
+          <div class="source" id="label-p2">Source: P2</div>
+        </div>
+      </div>
+
+      <div id="tile-p3" class="tile">
+        <div>
+          <div class="label">Picture 3</div>
+          <div class="source" id="label-p3">Source: P3</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      mode: '3',
+      sp1Enabled: false,
+      sp2Enabled: false,
+      p2Source: 'P2',
+      p3Source: 'P3'
+    };
+
+    const layoutEl = document.getElementById('layout');
+    const tileP3 = document.getElementById('tile-p3');
+    const labelP2El = document.getElementById('label-p2');
+    const labelP3El = document.getElementById('label-p3');
+    const toggleViewBtn = document.getElementById('toggleViewBtn');
+    const sp1Toggle = document.getElementById('sp1Toggle');
+    const sp2Toggle = document.getElementById('sp2Toggle');
+
+    function computeSources() {
+      const { sp1Enabled, sp2Enabled } = state;
+
+      if (sp1Enabled && sp2Enabled) {
+        state.p2Source = 'SP1';
+        state.p3Source = 'SP2';
+      } else if (sp1Enabled && !sp2Enabled) {
+        state.p2Source = 'P2';
+        state.p3Source = 'SP1';
+      } else if (!sp1Enabled && sp2Enabled) {
+        state.p2Source = 'P2';
+        state.p3Source = 'SP2';
+      } else {
+        state.p2Source = 'P2';
+        state.p3Source = 'P3';
+      }
+    }
+
+    function renderSources() {
+      labelP2El.textContent = 'Source: ' + state.p2Source;
+      labelP3El.textContent = 'Source: ' + state.p3Source;
+    }
+
+    function updateLayoutMode() {
+      if (state.mode === '3') {
+        layoutEl.classList.remove('layout-two');
+        layoutEl.classList.add('layout-three');
+        tileP3.classList.remove('hidden');
+        toggleViewBtn.textContent = '3-view mode';
+        toggleViewBtn.classList.remove('active');
+      } else {
+        layoutEl.classList.remove('layout-three');
+        layoutEl.classList.add('layout-two');
+        tileP3.classList.add('hidden');
+        toggleViewBtn.textContent = '2-view mode (70/30)';
+        toggleViewBtn.classList.add('active');
+      }
+    }
+
+    toggleViewBtn.addEventListener('click', () => {
+      state.mode = state.mode === '3' ? '2' : '3';
+      updateLayoutMode();
+    });
+
+    sp1Toggle.addEventListener('change', () => {
+      state.sp1Enabled = sp1Toggle.checked;
+      computeSources();
+      renderSources();
+    });
+
+    sp2Toggle.addEventListener('change', () => {
+      state.sp2Enabled = sp2Toggle.checked;
+      computeSources();
+      renderSources();
+    });
+
+    computeSources();
+    renderSources();
+    updateLayoutMode();
+  </script>
+
+</body>
+</html>
