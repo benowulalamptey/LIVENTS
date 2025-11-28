@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Producer v17</title>
+  <title>Producer v17.1</title>
   <style>
     body {
       margin: 0;
@@ -36,6 +36,16 @@
       color: #ddd;
     }
 
+    #topbar .mic-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      background: #3a7bfd;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-left: auto;
+    }
+
+    /* Main layout: 2 columns, left big tile, right stacked tiles */
     #layout {
       height: calc(100vh - 44px);
       display: grid;
@@ -44,24 +54,49 @@
       box-sizing: border-box;
     }
 
-    /* Super Admin layout: 5 rows => 40%, 20%, 20%, 10%, 10% approx */
-    .role-superadmin {
-      grid-template-rows: 4fr 2fr 2fr 1fr 1fr;
-      grid-template-columns: 1fr;
+    /* Column width ratios per role */
+    body.role-superadmin #layout {
+      grid-template-columns: 40% 60%;
     }
 
-    /* Normal producers: P1 (50%), P2 (25%), P3 (25%) */
-    .role-p2,
-    .role-p3 {
-      grid-template-rows: 2fr 1fr 1fr;
-      grid-template-columns: 1fr;
+    body.role-p2 #layout,
+    body.role-p3 #layout {
+      grid-template-columns: 50% 50%;
     }
 
-    /* Special producers: own feed 40%, then P1/P2/P3 20% each */
-    .role-spep1,
-    .role-spep2 {
-      grid-template-rows: 2fr 1fr 1fr 1fr;
-      grid-template-columns: 1fr;
+    body.role-spep1 #layout,
+    body.role-spep2 #layout {
+      grid-template-columns: 40% 60%;
+    }
+
+    #left-column,
+    #right-column {
+      height: 100%;
+    }
+
+    #left-column {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #right-column {
+      display: grid;
+      gap: 4px;
+    }
+
+    /* Right column row heights per role */
+    body.role-superadmin #right-column {
+      grid-template-rows: 2fr 2fr 1fr 1fr; /* P2, P3, SP1, SP2 */
+    }
+
+    body.role-p2 #right-column,
+    body.role-p3 #right-column {
+      grid-template-rows: 1fr 1fr; /* P2, P3 */
+    }
+
+    body.role-spep1 #right-column,
+    body.role-spep2 #right-column {
+      grid-template-rows: 1fr 1fr 1fr; /* P1 small, P2, P3 */
     }
 
     .tile {
@@ -75,14 +110,11 @@
       box-sizing: border-box;
     }
 
-    .hidden {
-      display: none;
-    }
-
     .tile-content {
       display: flex;
       flex-direction: column;
       gap: 4px;
+      padding: 4px;
     }
 
     .tile-label {
@@ -96,18 +128,13 @@
       color: #aaa;
     }
 
-    .mic-badge {
-      display: inline-block;
-      padding: 2px 6px;
-      background: #3a7bfd;
-      border-radius: 4px;
-      font-size: 11px;
-      margin-top: 4px;
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 
-<body>
+<body class="role-superadmin">
 
   <div id="topbar">
     <span class="label">Role:</span>
@@ -129,88 +156,112 @@
     <span id="micInfo" class="mic-badge">Mic: Super Admin only</span>
   </div>
 
-  <div id="layout" class="role-superadmin">
-    <!-- Super Admin & normal producers: P1, P2, P3 -->
-    <!-- Special producers: top tile shows "Your feed (SP1/SP2)" instead -->
-
-    <!-- Row 1 (or row 2+ for SPEP): Picture 1 / Admin -->
-    <div id="tile-p1" class="tile">
-      <div class="tile-content">
-        <div class="tile-label" id="label-p1">Picture 1 (Admin)</div>
-        <div class="tile-source" id="source-p1">Source: Super Admin</div>
-        <div class="tile-source">This is the 60%/40% main picture on viewers.</div>
+  <div id="layout">
+    <!-- LEFT COLUMN: main big tile (P1 or SP self) -->
+    <div id="left-column">
+      <div id="tile-main" class="tile">
+        <div class="tile-content">
+          <div class="tile-label" id="label-main">Picture 1 (Admin)</div>
+          <div class="tile-source" id="source-main">Source: Super Admin</div>
+          <div class="tile-source" id="desc-main">
+            Main big picture on viewers (Admin feed).
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Row 2: Picture 2 -->
-    <div id="tile-p2" class="tile">
-      <div class="tile-content">
-        <div class="tile-label">Picture 2</div>
-        <div class="tile-source">Source: Producer 2</div>
+    <!-- RIGHT COLUMN: stacked tiles -->
+    <div id="right-column">
+      <!-- Small P1 tile (only used for special producers) -->
+      <div id="tile-p1-small" class="tile hidden">
+        <div class="tile-content">
+          <div class="tile-label" id="label-p1-small">Picture 1 (Admin)</div>
+          <div class="tile-source" id="source-p1-small">Source: Super Admin</div>
+        </div>
       </div>
-    </div>
 
-    <!-- Row 3: Picture 3 -->
-    <div id="tile-p3" class="tile">
-      <div class="tile-content">
-        <div class="tile-label">Picture 3</div>
-        <div class="tile-source">Source: Producer 3</div>
+      <!-- P2 tile -->
+      <div id="tile-p2" class="tile">
+        <div class="tile-content">
+          <div class="tile-label">Picture 2</div>
+          <div class="tile-source">Source: Producer 2 (P2)</div>
+        </div>
       </div>
-    </div>
 
-    <!-- Row 4: SP1 (visible only to Super Admin) -->
-    <div id="tile-sp1" class="tile">
-      <div class="tile-content">
-        <div class="tile-label">SP1 (Special Picture 1)</div>
-        <div class="tile-source">Source: Special Producer 1</div>
+      <!-- P3 tile -->
+      <div id="tile-p3" class="tile">
+        <div class="tile-content">
+          <div class="tile-label">Picture 3</div>
+          <div class="tile-source">Source: Producer 3 (P3)</div>
+        </div>
       </div>
-    </div>
 
-    <!-- Row 5: SP2 (visible only to Super Admin) -->
-    <div id="tile-sp2" class="tile">
-      <div class="tile-content">
-        <div class="tile-label">SP2 (Special Picture 2)</div>
-        <div class="tile-source">Source: Special Producer 2</div>
+      <!-- SP1 tile (Super Admin only) -->
+      <div id="tile-sp1" class="tile">
+        <div class="tile-content">
+          <div class="tile-label">SP1 (Special Picture 1)</div>
+          <div class="tile-source">Source: Special Producer 1 (SP1)</div>
+        </div>
       </div>
-    </div>
 
-    <!-- Special producer self-feed tile (SPEP1 / SPEP2) -->
-    <div id="tile-spep-self" class="tile hidden">
-      <div class="tile-content">
-        <div class="tile-label" id="label-spep-self">Your camera feed (SP)</div>
-        <div class="tile-source">This occupies 40% of your producer screen.</div>
+      <!-- SP2 tile (Super Admin only) -->
+      <div id="tile-sp2" class="tile">
+        <div class="tile-content">
+          <div class="tile-label">SP2 (Special Picture 2)</div>
+          <div class="tile-source">Source: Special Producer 2 (SP2)</div>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
-    const layoutEl = document.getElementById('layout');
+    const bodyEl = document.body;
     const roleSelect = document.getElementById('roleSelect');
     const adminSelect = document.getElementById('adminSelect');
     const micInfo = document.getElementById('micInfo');
 
-    const tileP1 = document.getElementById('tile-p1');
+    const tileMain = document.getElementById('tile-main');
+    const labelMain = document.getElementById('label-main');
+    const sourceMain = document.getElementById('source-main');
+    const descMain = document.getElementById('desc-main');
+
+    const tileP1Small = document.getElementById('tile-p1-small');
+    const labelP1Small = document.getElementById('label-p1-small');
+    const sourceP1Small = document.getElementById('source-p1-small');
+
     const tileP2 = document.getElementById('tile-p2');
     const tileP3 = document.getElementById('tile-p3');
     const tileSP1 = document.getElementById('tile-sp1');
     const tileSP2 = document.getElementById('tile-sp2');
-    const tileSPEPSelf = document.getElementById('tile-spep-self');
-    const labelP1 = document.getElementById('label-p1');
-    const sourceP1 = document.getElementById('source-p1');
-    const labelSpepSelf = document.getElementById('label-spep-self');
+
+    function getAdminName() {
+      const val = adminSelect.value;
+      if (val === 'p2') return 'Producer 2 (P2)';
+      if (val === 'p3') return 'Producer 3 (P3)';
+      return 'Super Admin';
+    }
+
+    function updateAdminLabels() {
+      const adminName = getAdminName();
+
+      // For roles where main tile shows P1:
+      const role = roleSelect.value;
+      if (role === 'superadmin' || role === 'p2' || role === 'p3') {
+        labelMain.textContent = 'Picture 1 (Admin: ' + adminName + ')';
+        sourceMain.textContent = 'Source: ' + adminName;
+        descMain.textContent = 'Main big picture on viewers (Admin feed).';
+      }
+
+      // Small P1 tile used in special producer modes
+      labelP1Small.textContent = 'Picture 1 (Admin: ' + adminName + ')';
+      sourceP1Small.textContent = 'Source: ' + adminName;
+    }
 
     function updateRoleLayout() {
       const role = roleSelect.value;
 
-      // Reset all tiles visible, then hide selectively
-      tileP1.classList.remove('hidden');
-      tileP2.classList.remove('hidden');
-      tileP3.classList.remove('hidden');
-      tileSP1.classList.remove('hidden');
-      tileSP2.classList.remove('hidden');
-      tileSPEPSelf.classList.add('hidden');
-
-      layoutEl.classList.remove(
+      // Reset body role classes
+      bodyEl.classList.remove(
         'role-superadmin',
         'role-p2',
         'role-p3',
@@ -218,53 +269,71 @@
         'role-spep2'
       );
 
+      tileP1Small.classList.add('hidden');
+      tileP2.classList.remove('hidden');
+      tileP3.classList.remove('hidden');
+      tileSP1.classList.add('hidden');
+      tileSP2.classList.add('hidden');
+
       if (role === 'superadmin') {
-        layoutEl.classList.add('role-superadmin');
+        bodyEl.classList.add('role-superadmin');
+        // Left = P1 (Admin)
+        labelMain.textContent = 'Picture 1 (Admin: ' + getAdminName() + ')';
+        sourceMain.textContent = 'Source: ' + getAdminName();
+        descMain.textContent = 'Main big picture on viewers (Admin feed).';
+        // Right = P2, P3, SP1, SP2
         tileSP1.classList.remove('hidden');
         tileSP2.classList.remove('hidden');
-        tileSPEPSelf.classList.add('hidden');
         micInfo.textContent = 'Mic: Super Admin only';
       } else if (role === 'p2') {
-        layoutEl.classList.add('role-p2');
+        bodyEl.classList.add('role-p2');
+        // Left = P1 (Admin)
+        labelMain.textContent = 'Picture 1 (Admin: ' + getAdminName() + ')';
+        sourceMain.textContent = 'Source: ' + getAdminName();
+        descMain.textContent = 'Main big picture on viewers (Admin feed).';
+        // Right = P2, P3 (no SP tiles)
         tileSP1.classList.add('hidden');
         tileSP2.classList.add('hidden');
-        tileSPEPSelf.classList.add('hidden');
+        tileP1Small.classList.add('hidden');
         micInfo.textContent = 'Mic: Super Admin only (you are P2)';
       } else if (role === 'p3') {
-        layoutEl.classList.add('role-p3');
+        bodyEl.classList.add('role-p3');
+        labelMain.textContent = 'Picture 1 (Admin: ' + getAdminName() + ')';
+        sourceMain.textContent = 'Source: ' + getAdminName();
+        descMain.textContent = 'Main big picture on viewers (Admin feed).';
         tileSP1.classList.add('hidden');
         tileSP2.classList.add('hidden');
-        tileSPEPSelf.classList.add('hidden');
+        tileP1Small.classList.add('hidden');
         micInfo.textContent = 'Mic: Super Admin only (you are P3)';
       } else if (role === 'spep1') {
-        layoutEl.classList.add('role-spep1');
+        bodyEl.classList.add('role-spep1');
+        // Left = SP1 self feed
+        labelMain.textContent = 'Your camera feed (SP1)';
+        sourceMain.textContent = 'Source: Special Producer 1 (SP1)';
+        descMain.textContent = 'You are SP1. Viewers may see you as Special Picture 1.';
+        // Right = P1 small + P2 + P3
+        tileP1Small.classList.remove('hidden');
+        tileP2.classList.remove('hidden');
+        tileP3.classList.remove('hidden');
         tileSP1.classList.add('hidden');
         tileSP2.classList.add('hidden');
-        tileSPEPSelf.classList.remove('hidden');
-        labelSpepSelf.textContent = 'Your camera feed (SP1)';
         micInfo.textContent = 'Mic: Super Admin only (you are SP1)';
       } else if (role === 'spep2') {
-        layoutEl.classList.add('role-spep2');
+        bodyEl.classList.add('role-spep2');
+        // Left = SP2 self feed
+        labelMain.textContent = 'Your camera feed (SP2)';
+        sourceMain.textContent = 'Source: Special Producer 2 (SP2)';
+        descMain.textContent = 'You are SP2. Viewers may see you as Special Picture 2.';
+        // Right = P1 small + P2 + P3
+        tileP1Small.classList.remove('hidden');
+        tileP2.classList.remove('hidden');
+        tileP3.classList.remove('hidden');
         tileSP1.classList.add('hidden');
         tileSP2.classList.add('hidden');
-        tileSPEPSelf.classList.remove('hidden');
-        labelSpepSelf.textContent = 'Your camera feed (SP2)';
         micInfo.textContent = 'Mic: Super Admin only (you are SP2)';
       }
-    }
 
-    function updateAdminLabel() {
-      const value = adminSelect.value;
-      let adminName = 'Super Admin';
-
-      if (value === 'p2') adminName = 'Producer 2 (P2)';
-      if (value === 'p3') adminName = 'Producer 3 (P3)';
-
-      labelP1.textContent = 'Picture 1 (Admin: ' + adminName + ')';
-      sourceP1.textContent = 'Source: ' + adminName;
-
-      // NOTE: In a future step, this selection will be sent to the backend
-      // so that viewers automatically see the new P1 feed.
+      updateAdminLabels();
     }
 
     roleSelect.addEventListener('change', () => {
@@ -272,12 +341,11 @@
     });
 
     adminSelect.addEventListener('change', () => {
-      updateAdminLabel();
+      updateAdminLabels();
     });
 
     // Initial render
     updateRoleLayout();
-    updateAdminLabel();
   </script>
 
 </body>
