@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Livents Viewer v17.2</title>
+  <title>Livents Viewer v17.4</title>
   <style>
     body {
       margin: 0;
@@ -129,6 +129,12 @@
       font-weight: bold;
     }
 
+    #viewerModeLabel {
+      font-size: 12px;
+      color: #aaa;
+      margin-left: 4px;
+    }
+
     #viewerControls button {
       padding: 4px 8px;
       border-radius: 4px;
@@ -239,7 +245,7 @@
 
     <div id="viewerControls" class="hidden">
       <span id="viewerTitle"></span>
-      <span id="viewerModeLabel" style="font-size: 12px; color: #aaa;"></span>
+      <span id="viewerModeLabel"></span>
 
       <button id="toggleViewBtn">3-view mode</button>
 
@@ -265,7 +271,7 @@
       <div id="tile-right">
         <div id="tile-p2" class="tile">
           <div>
-            <div class="label">Picture 2</</div>
+            <div class="label">Picture 2</div>
             <div class="source" id="label-p2">Source: P2</div>
           </div>
         </div>
@@ -463,8 +469,7 @@
         title.className = "card-title";
         const ev = allEvents.find((e) => e.id === rec.event_id);
         title.textContent =
-          (ev && ev.name ? ev.name : "Recording") +
-          " (recorded)";
+          (ev && ev.name ? ev.name : "Recording") + " (recorded)";
 
         const meta = document.createElement("div");
         meta.className = "card-meta";
@@ -604,7 +609,7 @@
         allEvents = Array.isArray(evData) ? evData : [];
         allRecordings = Array.isArray(recData) ? recData : [];
 
-        renderCards();
+        applySearchFilter();
       } catch (e) {
         console.error("Error loading events/recordings", e);
         noEventsMessage.classList.remove("hidden");
@@ -618,6 +623,7 @@
     updateLayoutMode();
     setMode("list");
     loadData();
+    setInterval(loadData, 10000);
   </script>
 </body>
 </html>
