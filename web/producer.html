@@ -1,499 +1,184 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Livents Producer v17.3</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Livents Producer</title> <!-- CHANGE TO "Livents Producer" IN LIVENTS -->
   <style>
     body {
       margin: 0;
-      background: #000;
+      background: #111;
       color: #fff;
       font-family: Arial, sans-serif;
     }
 
-    #topbar {
-      padding: 8px 12px;
-      background: #111;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 14px;
-      border-bottom: 1px solid #333;
-      flex-wrap: wrap;
-    }
-
-    #topbar select,
-    #topbar button {
-      padding: 6px 10px;
-      border-radius: 4px;
-      border: 1px solid #444;
+    /* Top Bar */
+    #topBar {
+      width: 100%;
       background: #222;
-      color: #fff;
-      cursor: pointer;
-    }
-
-    #topbar .label {
+      padding: 10px;
+      text-align: center;
+      font-size: 22px;
       font-weight: bold;
-      color: #ddd;
+      border-bottom: 2px solid #333;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
-    #topbar .mic-badge {
-      display: inline-block;
-      padding: 2px 6px;
-      background: #3a7bfd;
-      border-radius: 4px;
-      font-size: 11px;
-      margin-left: auto;
+    /* Schedule Form */
+    #scheduleBox {
+      background: #1b1b1b;
+      padding: 15px;
+      margin: 12px;
+      border-radius: 8px;
+      border: 1px solid #333;
     }
 
-    /* Event panel for Super Admin */
-    #eventPanel {
-      padding: 6px 12px;
-      background: #141414;
-      border-bottom: 1px solid #333;
-      font-size: 13px;
-    }
-
-    #eventPanel.hidden {
-      display: none;
-    }
-
-    #eventPanel-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-    }
-
-    #eventPanel-row input[type="text"] {
-      padding: 4px 6px;
-      border-radius: 4px;
-      border: 1px solid #444;
-      background: #000;
-      color: #fff;
-      font-size: 12px;
-    }
-
-    #eventPanel-row label {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 12px;
-      color: #ccc;
+    #scheduleBox input, #scheduleBox textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      border: none;
+      font-size: 16px;
     }
 
     #createEventBtn {
-      padding: 4px 10px;
-      border-radius: 4px;
-      border: 1px solid #555;
-      background: #222;
-      color: #fff;
+      width: 100%;
+      padding: 12px;
+      background: #ff9900;
+      border: none;
+      font-size: 18px;
+      border-radius: 6px;
       cursor: pointer;
+      font-weight: bold;
     }
 
-    #eventStatus {
-      font-size: 12px;
+    #createEventBtn:hover {
+      background: #ffb84d;
     }
 
-    /* Main layout: 2 columns, left big tile, right stacked tiles */
-    #layout {
-      height: calc(100vh - 44px - 50px); /* topbar + eventPanel approx */
-      display: grid;
-      gap: 4px;
-      padding: 4px;
-      box-sizing: border-box;
+    /* Layout for 5-view Super Admin Screen */
+    #layoutContainer {
+      display: flex;
+      height: calc(100vh - 350px);
+      margin: 12px;
+      gap: 12px;
     }
 
-    /* Column width ratios per role */
-    body.role-superadmin #layout {
-      grid-template-columns: 40% 60%;
+    #p1 {
+      width: 40%;
+      background: #000;
     }
 
-    body.role-p2 #layout,
-    body.role-p3 #layout {
-      grid-template-columns: 50% 50%;
-    }
-
-    body.role-spep1 #layout,
-    body.role-spep2 #layout {
-      grid-template-columns: 40% 60%;
-    }
-
-    #left-column,
-    #right-column {
-      height: 100%;
-    }
-
-    #left-column {
+    #rightPane {
+      width: 60%;
       display: flex;
       flex-direction: column;
-    }
-
-    #right-column {
-      display: grid;
-      gap: 4px;
-    }
-
-    /* Right column row heights per role */
-    body.role-superadmin #right-column {
-      grid-template-rows: 2fr 2fr 1fr 1fr; /* P2, P3, SP1, SP2 */
-    }
-
-    body.role-p2 #right-column,
-    body.role-p3 #right-column {
-      grid-template-rows: 1fr 1fr; /* P2, P3 */
-    }
-
-    body.role-spep1 #right-column,
-    body.role-spep2 #right-column {
-      grid-template-rows: 1fr 1fr 1fr; /* P1 small, P2, P3 */
+      gap: 6px;
     }
 
     .tile {
-      background: #111;
-      border: 1px solid #333;
+      flex: 1;
+      background: #222;
       display: flex;
-      align-items: center;
       justify-content: center;
-      text-align: center;
+      align-items: center;
+      color: #ccc;
+      font-size: 18px;
+      border-radius: 6px;
+      border: 1px solid #333;
+    }
+
+    .label {
       font-size: 14px;
-      box-sizing: border-box;
-    }
-
-    .tile-content {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding: 4px;
-    }
-
-    .tile-label {
-      font-weight: bold;
-      font-size: 13px;
-      color: #eee;
-    }
-
-    .tile-source {
-      font-size: 12px;
-      color: #aaa;
-    }
-
-    .hidden {
-      display: none;
+      opacity: 0.85;
+      margin-bottom: 4px;
     }
   </style>
 </head>
+<body>
 
-<body class="role-superadmin">
-  <div id="topbar">
-    <span class="label">Role:</span>
-    <select id="roleSelect">
-      <option value="superadmin">Super Admin</option>
-      <option value="p2">Producer 2 (P2)</option>
-      <option value="p3">Producer 3 (P3)</option>
-      <option value="spep1">Special Producer 1 (SP1)</option>
-      <option value="spep2">Special Producer 2 (SP2)</option>
-    </select>
+<div id="topBar">Livents Producer</div>  
+<!-- CHANGE THIS TEXT TO Livents Producer IN THE LIVENTS REPO -->
 
-    <span class="label">Current Admin:</span>
-    <select id="adminSelect">
-      <option value="superadmin">Super Admin</option>
-      <option value="p2">Producer 2 (P2)</option>
-      <option value="p3">Producer 3 (P3)</option>
-    </select>
+<div id="scheduleBox">
+  <h3>Schedule Event</h3>
 
-    <span id="micInfo" class="mic-badge">Mic: Super Admin only</span>
+  <label>Event Title</label>
+  <input id="titleInput" placeholder="Enter event title">
+
+  <label>Event Time</label>
+  <input id="timeInput" type="datetime-local">
+
+  <label>Special Picture 1 Description</label>
+  <textarea id="sp1Desc" rows="2" placeholder="Describe SP1 feed..."></textarea>
+
+  <label>Special Picture 2 Description</label>
+  <textarea id="sp2Desc" rows="2" placeholder="Describe SP2 feed..."></textarea>
+
+  <button id="createEventBtn">Create Event</button>
+</div>
+
+<!-- Producer multi-view layout -->
+<div id="layoutContainer">
+
+  <!-- Left large tile -->
+  <div id="p1" class="tile">Picture 1 (Admin Feed)</div>
+
+  <!-- Right side stacked tiles -->
+  <div id="rightPane">
+    <div id="p2" class="tile">Picture 2 (Producer 2)</div>
+    <div id="p3" class="tile">Picture 3 (Producer 3)</div>
+    <div id="sp1" class="tile">SP1 (Special Picture 1)</div>
+    <div id="sp2" class="tile">SP2 (Special Picture 2)</div>
   </div>
+</div>
 
-  <!-- Event scheduling panel (Super Admin only) -->
-  <div id="eventPanel" class="hidden">
-    <div style="font-weight: bold; margin-bottom: 4px;">Event setup (Super Admin)</div>
-    <div id="eventPanel-row">
-      <input id="eventName" type="text" placeholder="Event name" style="min-width: 150px; flex: 1;" />
-      <input id="eventDate" type="text" placeholder="Date (e.g. 2025-12-31)" style="width: 140px;" />
-      <input id="eventTime" type="text" placeholder="Time (e.g. 18:30)" style="width: 110px;" />
-      <input id="eventDescription" type="text" placeholder="Short description" style="min-width: 180px; flex: 1;" />
-    </div>
-    <div id="eventPanel-row" style="margin-top: 4px;">
-      <label>
-        <input type="checkbox" id="sp1Enabled" />
-        SP1 available
-      </label>
-      <input id="sp1Description" type="text" placeholder="SP1 description" style="min-width: 180px; flex: 1;" />
+<script>
+  const isLivents = document.title.toLowerCase().includes("livents");
+  const API = isLivents
+    ? "https://livents-backend.onrender.com"
+    : "https://ludi-backend.onrender.com";
 
-      <label>
-        <input type="checkbox" id="sp2Enabled" />
-        SP2 available
-      </label>
-      <input id="sp2Description" type="text" placeholder="SP2 description" style="min-width: 180px; flex: 1;" />
+  const btn = document.getElementById("createEventBtn");
 
-      <button id="createEventBtn">Create Event</button>
-      <span id="eventStatus"></span>
-    </div>
-  </div>
+  btn.onclick = async () => {
+    const title = document.getElementById("titleInput").value.trim();
+    const time = document.getElementById("timeInput").value.trim();
+    const sp1Desc = document.getElementById("sp1Desc").value.trim();
+    const sp2Desc = document.getElementById("sp2Desc").value.trim();
 
-  <div id="layout">
-    <!-- LEFT COLUMN: main big tile -->
-    <div id="left-column">
-      <div id="tile-main" class="tile">
-        <div class="tile-content">
-          <div class="tile-label" id="label-main">Picture 1 (Admin)</div>
-          <div class="tile-source" id="source-main">Source: Super Admin</div>
-          <div class="tile-source" id="desc-main">
-            Main big picture on viewers (Admin feed).
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- RIGHT COLUMN: stacked tiles -->
-    <div id="right-column">
-      <!-- Small P1 tile (only used for special producers) -->
-      <div id="tile-p1-small" class="tile hidden">
-        <div class="tile-content">
-          <div class="tile-label" id="label-p1-small">Picture 1 (Admin)</div>
-          <div class="tile-source" id="source-p1-small">Source: Super Admin</div>
-        </div>
-      </div>
-
-      <!-- P2 tile -->
-      <div id="tile-p2" class="tile">
-        <div class="tile-content">
-          <div class="tile-label">Picture 2</div>
-          <div class="tile-source">Source: Producer 2 (P2)</div>
-        </div>
-      </div>
-
-      <!-- P3 tile -->
-      <div id="tile-p3" class="tile">
-        <div class="tile-content">
-          <div class="tile-label">Picture 3</div>
-          <div class="tile-source">Source: Producer 3 (P3)</div>
-        </div>
-      </div>
-
-      <!-- SP1 tile (Super Admin only) -->
-      <div id="tile-sp1" class="tile">
-        <div class="tile-content">
-          <div class="tile-label">SP1 (Special Picture 1)</div>
-          <div class="tile-source">Source: Special Producer 1 (SP1)</div>
-        </div>
-      </div>
-
-      <!-- SP2 tile (Super Admin only) -->
-      <div id="tile-sp2" class="tile">
-        <div class="tile-content">
-          <div class="tile-label">SP2 (Special Picture 2)</div>
-          <div class="tile-source">Source: Special Producer 2 (SP2)</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // Ludi backend URL
-    const SERVER_BASE_URL = "https://livents-backend.onrender.com";
-
-    const bodyEl = document.body;
-    const roleSelect = document.getElementById("roleSelect");
-    const adminSelect = document.getElementById("adminSelect");
-    const micInfo = document.getElementById("micInfo");
-
-    const eventPanel = document.getElementById("eventPanel");
-    const eventNameInput = document.getElementById("eventName");
-    const eventDateInput = document.getElementById("eventDate");
-    const eventTimeInput = document.getElementById("eventTime");
-    const eventDescriptionInput = document.getElementById("eventDescription");
-    const sp1EnabledInput = document.getElementById("sp1Enabled");
-    const sp1DescriptionInput = document.getElementById("sp1Description");
-    const sp2EnabledInput = document.getElementById("sp2Enabled");
-    const sp2DescriptionInput = document.getElementById("sp2Description");
-    const createEventBtn = document.getElementById("createEventBtn");
-    const eventStatus = document.getElementById("eventStatus");
-
-    const tileMain = document.getElementById("tile-main");
-    const labelMain = document.getElementById("label-main");
-    const sourceMain = document.getElementById("source-main");
-    const descMain = document.getElementById("desc-main");
-
-    const tileP1Small = document.getElementById("tile-p1-small");
-    const labelP1Small = document.getElementById("label-p1-small");
-    const sourceP1Small = document.getElementById("source-p1-small");
-
-    const tileP2 = document.getElementById("tile-p2");
-    const tileP3 = document.getElementById("tile-p3");
-    const tileSP1 = document.getElementById("tile-sp1");
-    const tileSP2 = document.getElementById("tile-sp2");
-
-    function getAdminName() {
-      const val = adminSelect.value;
-      if (val === "p2") return "Producer 2 (P2)";
-      if (val === "p3") return "Producer 3 (P3)";
-      return "Super Admin";
+    if (!title || !time) {
+      alert("Event title and time required.");
+      return;
     }
 
-    function updateAdminLabels() {
-      const adminName = getAdminName();
+    const body = {
+      title,
+      time,
+      sp1Desc,
+      sp2Desc
+    };
 
-      const role = roleSelect.value;
-      if (role === "superadmin" || role === "p2" || role === "p3") {
-        labelMain.textContent = "Picture 1 (Admin: " + adminName + ")";
-        sourceMain.textContent = "Source: " + adminName;
-        descMain.textContent = "Main big picture on viewers (Admin feed).";
-      }
-
-      labelP1Small.textContent = "Picture 1 (Admin: " + adminName + ")";
-      sourceP1Small.textContent = "Source: " + adminName;
-    }
-
-    function updateRoleLayout() {
-      const role = roleSelect.value;
-
-      bodyEl.classList.remove(
-        "role-superadmin",
-        "role-p2",
-        "role-p3",
-        "role-spep1",
-        "role-spep2"
-      );
-
-      tileP1Small.classList.add("hidden");
-      tileP2.classList.remove("hidden");
-      tileP3.classList.remove("hidden");
-      tileSP1.classList.add("hidden");
-      tileSP2.classList.add("hidden");
-
-      if (role === "superadmin") {
-        bodyEl.classList.add("role-superadmin");
-        labelMain.textContent = "Picture 1 (Admin: " + getAdminName() + ")";
-        sourceMain.textContent = "Source: " + getAdminName();
-        descMain.textContent = "Main big picture on viewers (Admin feed).";
-        tileSP1.classList.remove("hidden");
-        tileSP2.classList.remove("hidden");
-        micInfo.textContent = "Mic: Super Admin only";
-        eventPanel.classList.remove("hidden");
-      } else if (role === "p2") {
-        bodyEl.classList.add("role-p2");
-        labelMain.textContent = "Picture 1 (Admin: " + getAdminName() + ")";
-        sourceMain.textContent = "Source: " + getAdminName();
-        descMain.textContent = "Main big picture on viewers (Admin feed).";
-        tileSP1.classList.add("hidden");
-        tileSP2.classList.add("hidden");
-        tileP1Small.classList.add("hidden");
-        micInfo.textContent = "Mic: Super Admin only (you are P2)";
-        eventPanel.classList.add("hidden");
-      } else if (role === "p3") {
-        bodyEl.classList.add("role-p3");
-        labelMain.textContent = "Picture 1 (Admin: " + getAdminName() + ")";
-        sourceMain.textContent = "Source: " + getAdminName();
-        descMain.textContent = "Main big picture on viewers (Admin feed).";
-        tileSP1.classList.add("hidden");
-        tileSP2.classList.add("hidden");
-        tileP1Small.classList.add("hidden");
-        micInfo.textContent = "Mic: Super Admin only (you are P3)";
-        eventPanel.classList.add("hidden");
-      } else if (role === "spep1") {
-        bodyEl.classList.add("role-spep1");
-        labelMain.textContent = "Your camera feed (SP1)";
-        sourceMain.textContent = "Source: Special Producer 1 (SP1)";
-        descMain.textContent = "You are SP1. Viewers may see you as Special Picture 1.";
-        tileP1Small.classList.remove("hidden");
-        tileP2.classList.remove("hidden");
-        tileP3.classList.remove("hidden");
-        tileSP1.classList.add("hidden");
-        tileSP2.classList.add("hidden");
-        micInfo.textContent = "Mic: Super Admin only (you are SP1)";
-        eventPanel.classList.add("hidden");
-      } else if (role === "spep2") {
-        bodyEl.classList.add("role-spep2");
-        labelMain.textContent = "Your camera feed (SP2)";
-        sourceMain.textContent = "Source: Special Producer 2 (SP2)";
-        descMain.textContent = "You are SP2. Viewers may see you as Special Picture 2.";
-        tileP1Small.classList.remove("hidden");
-        tileP2.classList.remove("hidden");
-        tileP3.classList.remove("hidden");
-        tileSP1.classList.add("hidden");
-        tileSP2.classList.add("hidden");
-        micInfo.textContent = "Mic: Super Admin only (you are SP2)";
-        eventPanel.classList.add("hidden");
-      }
-
-      updateAdminLabels();
-    }
-
-    roleSelect.addEventListener("change", () => {
-      updateRoleLayout();
+    const res = await fetch(`${API}/event`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(body)
     });
 
-    adminSelect.addEventListener("change", () => {
-      updateAdminLabels();
-    });
-
-    async function createEvent() {
-      eventStatus.textContent = "";
-      const name = eventNameInput.value.trim();
-      const description = eventDescriptionInput.value.trim();
-      const date = eventDateInput.value.trim();
-      const time = eventTimeInput.value.trim();
-      const sp1Enabled = sp1EnabledInput.checked;
-      const sp1Description = sp1DescriptionInput.value.trim();
-      const sp2Enabled = sp2EnabledInput.checked;
-      const sp2Description = sp2DescriptionInput.value.trim();
-
-      if (!name) {
-        eventStatus.textContent = "Event name is required.";
-        eventStatus.style.color = "#ff8080";
-        return;
-      }
-
-      if (!SERVER_BASE_URL) {
-        eventStatus.textContent = "SERVER_BASE_URL not set.";
-        eventStatus.style.color = "#ff8080";
-        return;
-      }
-
-      try {
-        eventStatus.textContent = "Creating event...";
-        eventStatus.style.color = "#ccc";
-
-        const resp = await fetch(SERVER_BASE_URL + "/events", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name,
-            description,
-            date,
-            time,
-            sp1Enabled,
-            sp1Description,
-            sp2Enabled,
-            sp2Description
-          })
-        });
-
-        if (!resp.ok) {
-          const err = await resp.json().catch(() => ({}));
-          eventStatus.textContent = "Error: " + (err.error || "failed to create");
-          eventStatus.style.color = "#ff8080";
-          return;
-        }
-
-        const data = await resp.json();
-        eventStatus.textContent = "Event created. ID: " + data.id;
-        eventStatus.style.color = "#80ff80";
-      } catch (e) {
-        console.error(e);
-        eventStatus.textContent = "Network error";
-        eventStatus.style.color = "#ff8080";
-      }
+    if (res.ok) {
+      alert("Event scheduled successfully!");
+      document.getElementById("titleInput").value = "";
+      document.getElementById("timeInput").value = "";
+      document.getElementById("sp1Desc").value = "";
+      document.getElementById("sp2Desc").value = "";
+    } else {
+      alert("Error scheduling event.");
     }
+  };
+</script>
 
-    createEventBtn.addEventListener("click", () => {
-      createEvent();
-    });
-
-    // Initial render
-    updateRoleLayout();
-  </script>
 </body>
 </html>
