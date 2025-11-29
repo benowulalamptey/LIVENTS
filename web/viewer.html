@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Viewer v17</title>
+  <title>Livents Viewer v17.2</title>
   <style>
     body {
       margin: 0;
@@ -11,16 +11,26 @@
       font-family: Arial, sans-serif;
     }
 
-    #controls {
+    #topbar {
       padding: 8px 12px;
       background: #111;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
       font-size: 14px;
+      border-bottom: 1px solid #333;
     }
 
-    #controls button {
+    #topbar input {
+      flex: 1;
+      padding: 4px 6px;
+      border-radius: 4px;
+      border: 1px solid #444;
+      background: #000;
+      color: #fff;
+    }
+
+    #topbar button {
       padding: 6px 10px;
       border-radius: 4px;
       border: 1px solid #444;
@@ -29,12 +39,111 @@
       cursor: pointer;
     }
 
-    #controls button.active {
+    #topbar button.hidden {
+      display: none;
+    }
+
+    #topbar-label {
+      font-weight: bold;
+      margin-right: 4px;
+    }
+
+    #content {
+      height: calc(100vh - 40px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    #eventLists {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .cards {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .card {
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 8px 10px;
+      background: #111;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .card-meta {
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    .card-badges {
+      font-size: 11px;
+      color: #ccc;
+    }
+
+    .card button {
+      align-self: flex-start;
+      margin-top: 4px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid #555;
+      background: #222;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    #viewerControls {
+      padding: 6px 12px;
+      background: #111;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      border-bottom: 1px solid #333;
+    }
+
+    #viewerControls.hidden {
+      display: none;
+    }
+
+    #viewerTitle {
+      font-weight: bold;
+    }
+
+    #viewerControls button {
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid #444;
+      background: #222;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    #viewerControls button.active {
       background: #3a7bfd;
       border-color: #3a7bfd;
     }
 
-    #controls label {
+    #viewerControls label {
       display: flex;
       align-items: center;
       gap: 4px;
@@ -42,8 +151,8 @@
     }
 
     #layout {
+      flex: 1;
       display: grid;
-      height: calc(100vh - 40px);
       gap: 4px;
     }
 
@@ -96,127 +205,419 @@
       font-size: 12px;
       color: #aaa;
     }
+
+    #noEventsMessage {
+      font-size: 13px;
+      color: #aaa;
+    }
   </style>
 </head>
 
 <body>
-
-  <div id="controls">
-    <button id="toggleViewBtn">3-view mode</button>
-
-    <label>
-      <input type="checkbox" id="sp1Toggle" />
-      SP1 (Special Picture 1)
-    </label>
-
-    <label>
-      <input type="checkbox" id="sp2Toggle" />
-      SP2 (Special Picture 2)
-    </label>
+  <div id="topbar">
+    <span id="topbar-label">Search:</span>
+    <input id="searchInput" type="text" placeholder="Search events & recordings..." />
+    <button id="backToListBtn" class="hidden">Back to events</button>
   </div>
 
-  <div id="layout" class="layout-three">
-    <div id="tile-main" class="tile">
+  <div id="content">
+    <div id="eventLists">
       <div>
-        <div class="label">Picture 1 (Admin)</div>
-        <div class="source">Source: Admin feed</div>
+        <div class="section-title">Upcoming Events</div>
+        <div id="upcomingCards" class="cards"></div>
+      </div>
+
+      <div>
+        <div class="section-title">Past Recorded Events</div>
+        <div id="recordingCards" class="cards"></div>
+      </div>
+
+      <div id="noEventsMessage" class="hidden">
+        No events or recordings yet.
       </div>
     </div>
 
-    <div id="tile-right">
-      <div id="tile-p2" class="tile">
+    <div id="viewerControls" class="hidden">
+      <span id="viewerTitle"></span>
+      <span id="viewerModeLabel" style="font-size: 12px; color: #aaa;"></span>
+
+      <button id="toggleViewBtn">3-view mode</button>
+
+      <label>
+        <input type="checkbox" id="sp1Toggle" />
+        SP1 (Special Picture 1)
+      </label>
+
+      <label>
+        <input type="checkbox" id="sp2Toggle" />
+        SP2 (Special Picture 2)
+      </label>
+    </div>
+
+    <div id="layout" class="layout-three hidden">
+      <div id="tile-main" class="tile">
         <div>
-          <div class="label">Picture 2</div>
-          <div class="source" id="label-p2">Source: P2</div>
+          <div class="label">Picture 1 (Admin)</div>
+          <div class="source" id="label-main-source">Source: Admin feed</div>
         </div>
       </div>
 
-      <div id="tile-p3" class="tile">
-        <div>
-          <div class="label">Picture 3</div>
-          <div class="source" id="label-p3">Source: P3</div>
+      <div id="tile-right">
+        <div id="tile-p2" class="tile">
+          <div>
+            <div class="label">Picture 2</</div>
+            <div class="source" id="label-p2">Source: P2</div>
+          </div>
+        </div>
+
+        <div id="tile-p3" class="tile">
+          <div>
+            <div class="label">Picture 3</div>
+            <div class="source" id="label-p3">Source: P3</div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    const state = {
-      mode: '3',
-      sp1Enabled: false,
-      sp2Enabled: false,
-      p2Source: 'P2',
-      p3Source: 'P3'
+    // Backend URL for Livents
+    const BACKEND_BASE_URL = "https://livents-backend.onrender.com";
+
+    const searchInput = document.getElementById("searchInput");
+    const backToListBtn = document.getElementById("backToListBtn");
+    const eventLists = document.getElementById("eventLists");
+    const upcomingCards = document.getElementById("upcomingCards");
+    const recordingCards = document.getElementById("recordingCards");
+    const noEventsMessage = document.getElementById("noEventsMessage");
+
+    const viewerControls = document.getElementById("viewerControls");
+    const viewerTitle = document.getElementById("viewerTitle");
+    const viewerModeLabel = document.getElementById("viewerModeLabel");
+    const toggleViewBtn = document.getElementById("toggleViewBtn");
+    const sp1Toggle = document.getElementById("sp1Toggle");
+    const sp2Toggle = document.getElementById("sp2Toggle");
+
+    const layoutEl = document.getElementById("layout");
+    const tileP3 = document.getElementById("tile-p3");
+    const labelP2El = document.getElementById("label-p2");
+    const labelP3El = document.getElementById("label-p3");
+    const labelMainSource = document.getElementById("label-main-source");
+
+    let allEvents = [];
+    let allRecordings = [];
+    let filteredEvents = [];
+    let filteredRecordings = [];
+    let currentMode = "list";
+    let currentEvent = null;
+    let currentRecording = null;
+
+    const tileState = {
+      layoutMode: "3",
+      sp1Selected: false,
+      sp2Selected: false,
+      p2Source: "P2",
+      p3Source: "P3",
     };
 
-    const layoutEl = document.getElementById('layout');
-    const tileP3 = document.getElementById('tile-p3');
-    const labelP2El = document.getElementById('label-p2');
-    const labelP3El = document.getElementById('label-p3');
-    const toggleViewBtn = document.getElementById('toggleViewBtn');
-    const sp1Toggle = document.getElementById('sp1Toggle');
-    const sp2Toggle = document.getElementById('sp2Toggle');
-
     function computeSources() {
-      const { sp1Enabled, sp2Enabled } = state;
+      const { sp1Selected, sp2Selected } = tileState;
 
-      if (sp1Enabled && sp2Enabled) {
-        state.p2Source = 'SP1';
-        state.p3Source = 'SP2';
-      } else if (sp1Enabled && !sp2Enabled) {
-        state.p2Source = 'P2';
-        state.p3Source = 'SP1';
-      } else if (!sp1Enabled && sp2Enabled) {
-        state.p2Source = 'P2';
-        state.p3Source = 'SP2';
+      if (sp1Selected && sp2Selected) {
+        tileState.p2Source = "SP1";
+        tileState.p3Source = "SP2";
+      } else if (sp1Selected && !sp2Selected) {
+        tileState.p2Source = "P2";
+        tileState.p3Source = "SP1";
+      } else if (!sp1Selected && sp2Selected) {
+        tileState.p2Source = "P2";
+        tileState.p3Source = "SP2";
       } else {
-        state.p2Source = 'P2';
-        state.p3Source = 'P3';
+        tileState.p2Source = "P2";
+        tileState.p3Source = "P3";
       }
     }
 
     function renderSources() {
-      labelP2El.textContent = 'Source: ' + state.p2Source;
-      labelP3El.textContent = 'Source: ' + state.p3Source;
+      labelP2El.textContent = "Source: " + tileState.p2Source;
+      labelP3El.textContent = "Source: " + tileState.p3Source;
     }
 
     function updateLayoutMode() {
-      if (state.mode === '3') {
-        layoutEl.classList.remove('layout-two');
-        layoutEl.classList.add('layout-three');
-        tileP3.classList.remove('hidden');
-        toggleViewBtn.textContent = '3-view mode';
-        toggleViewBtn.classList.remove('active');
+      if (tileState.layoutMode === "3") {
+        layoutEl.classList.remove("layout-two");
+        layoutEl.classList.add("layout-three");
+        tileP3.classList.remove("hidden");
+        toggleViewBtn.textContent = "3-view mode";
+        toggleViewBtn.classList.remove("active");
       } else {
-        layoutEl.classList.remove('layout-three');
-        layoutEl.classList.add('layout-two');
-        tileP3.classList.add('hidden');
-        toggleViewBtn.textContent = '2-view mode (70/30)';
-        toggleViewBtn.classList.add('active');
+        layoutEl.classList.remove("layout-three");
+        layoutEl.classList.add("layout-two");
+        tileP3.classList.add("hidden");
+        toggleViewBtn.textContent = "2-view mode (70/30)";
+        toggleViewBtn.classList.add("active");
       }
     }
 
-    toggleViewBtn.addEventListener('click', () => {
-      state.mode = state.mode === '3' ? '2' : '3';
+    toggleViewBtn.addEventListener("click", () => {
+      tileState.layoutMode = tileState.layoutMode === "3" ? "2" : "3";
       updateLayoutMode();
     });
 
-    sp1Toggle.addEventListener('change', () => {
-      state.sp1Enabled = sp1Toggle.checked;
+    sp1Toggle.addEventListener("change", () => {
+      tileState.sp1Selected = sp1Toggle.checked;
       computeSources();
       renderSources();
     });
 
-    sp2Toggle.addEventListener('change', () => {
-      state.sp2Enabled = sp2Toggle.checked;
+    sp2Toggle.addEventListener("change", () => {
+      tileState.sp2Selected = sp2Toggle.checked;
       computeSources();
       renderSources();
     });
+
+    function setMode(newMode) {
+      currentMode = newMode;
+
+      if (newMode === "list") {
+        eventLists.classList.remove("hidden");
+        viewerControls.classList.add("hidden");
+        layoutEl.classList.add("hidden");
+        backToListBtn.classList.add("hidden");
+      } else {
+        eventLists.classList.add("hidden");
+        viewerControls.classList.remove("hidden");
+        layoutEl.classList.remove("hidden");
+        backToListBtn.classList.remove("hidden");
+      }
+    }
+
+    backToListBtn.addEventListener("click", () => {
+      currentEvent = null;
+      currentRecording = null;
+      viewerTitle.textContent = "";
+      viewerModeLabel.textContent = "";
+      sp1Toggle.checked = false;
+      sp2Toggle.checked = false;
+      tileState.sp1Selected = false;
+      tileState.sp2Selected = false;
+      computeSources();
+      renderSources();
+      setMode("list");
+    });
+
+    function renderCards() {
+      upcomingCards.innerHTML = "";
+      recordingCards.innerHTML = "";
+
+      const evs = filteredEvents.length ? filteredEvents : allEvents;
+      const recs = filteredRecordings.length ? filteredRecordings : allRecordings;
+
+      if (!evs.length && !recs.length) {
+        noEventsMessage.classList.remove("hidden");
+      } else {
+        noEventsMessage.classList.add("hidden");
+      }
+
+      evs.forEach((ev) => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const title = document.createElement("div");
+        title.className = "card-title";
+        title.textContent = ev.name || "(No name)";
+
+        const meta = document.createElement("div");
+        meta.className = "card-meta";
+        meta.textContent =
+          (ev.date || "") +
+          (ev.time ? " " + ev.time : "") +
+          (ev.description ? " — " + ev.description : "");
+
+        const badges = document.createElement("div");
+        badges.className = "card-badges";
+        const flags = [];
+        if (ev.sp1_enabled) flags.push("SP1 available");
+        if (ev.sp2_enabled) flags.push("SP2 available");
+        badges.textContent = flags.length ? flags.join(" · ") : "No special pictures";
+
+        const btn = document.createElement("button");
+        btn.textContent = "View Event";
+        btn.addEventListener("click", () => {
+          enterLiveViewer(ev);
+        });
+
+        card.appendChild(title);
+        card.appendChild(meta);
+        card.appendChild(badges);
+        card.appendChild(btn);
+
+        upcomingCards.appendChild(card);
+      });
+
+      recs.forEach((rec) => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const title = document.createElement("div");
+        title.className = "card-title";
+        const ev = allEvents.find((e) => e.id === rec.event_id);
+        title.textContent =
+          (ev && ev.name ? ev.name : "Recording") +
+          " (recorded)";
+
+        const meta = document.createElement("div");
+        meta.className = "card-meta";
+        meta.textContent =
+          (rec.created_at || "") +
+          (ev && ev.description ? " — " + ev.description : "");
+
+        const badges = document.createElement("div");
+        badges.className = "card-badges";
+        const flags = [];
+        if (ev && ev.sp1_enabled) flags.push("SP1 recorded");
+        if (ev && ev.sp2_enabled) flags.push("SP2 recorded");
+        badges.textContent = flags.length ? flags.join(" · ") : "No special pictures";
+
+        const btn = document.createElement("button");
+        btn.textContent = "Watch Recording";
+        btn.addEventListener("click", () => {
+          enterRecordingViewer(rec, ev || null);
+        });
+
+        card.appendChild(title);
+        card.appendChild(meta);
+        card.appendChild(badges);
+        card.appendChild(btn);
+
+        recordingCards.appendChild(card);
+      });
+    }
+
+    function applySearchFilter() {
+      const q = searchInput.value.trim().toLowerCase();
+      if (!q) {
+        filteredEvents = [];
+        filteredRecordings = [];
+        renderCards();
+        return;
+      }
+
+      filteredEvents = allEvents.filter((ev) => {
+        const haystack =
+          (ev.name || "") +
+          " " +
+          (ev.description || "") +
+          " " +
+          (ev.date || "") +
+          " " +
+          (ev.time || "");
+        return haystack.toLowerCase().includes(q);
+      });
+
+      filteredRecordings = allRecordings.filter((rec) => {
+        const ev = allEvents.find((e) => e.id === rec.event_id);
+        const haystack =
+          (ev && ev.name ? ev.name : "") +
+          " " +
+          (ev && ev.description ? ev.description : "") +
+          " " +
+          (rec.created_at || "");
+        return haystack.toLowerCase().includes(q);
+      });
+
+      renderCards();
+    }
+
+    searchInput.addEventListener("input", () => {
+      applySearchFilter();
+    });
+
+    function enterLiveViewer(ev) {
+      currentEvent = ev;
+      currentRecording = null;
+      viewerTitle.textContent = ev.name || "(Unnamed event)";
+      viewerModeLabel.textContent = " — Live event";
+      labelMainSource.textContent = "Source: Admin feed";
+
+      sp1Toggle.disabled = !ev.sp1_enabled;
+      sp2Toggle.disabled = !ev.sp2_enabled;
+
+      if (!ev.sp1_enabled) {
+        sp1Toggle.checked = false;
+        tileState.sp1Selected = false;
+      }
+      if (!ev.sp2_enabled) {
+        sp2Toggle.checked = false;
+        tileState.sp2Selected = false;
+      }
+
+      computeSources();
+      renderSources();
+      tileState.layoutMode = "3";
+      updateLayoutMode();
+
+      setMode("live");
+    }
+
+    function enterRecordingViewer(rec, ev) {
+      currentRecording = rec;
+      currentEvent = ev;
+      viewerTitle.textContent =
+        (ev && ev.name ? ev.name : "Recording") + " (Playback)";
+      viewerModeLabel.textContent = " — Recorded event";
+      labelMainSource.textContent = "Source: Admin feed (recorded)";
+
+      const hasSP1 = ev && ev.sp1_enabled;
+      const hasSP2 = ev && ev.sp2_enabled;
+
+      sp1Toggle.disabled = !hasSP1;
+      sp2Toggle.disabled = !hasSP2;
+
+      if (!hasSP1) {
+        sp1Toggle.checked = false;
+        tileState.sp1Selected = false;
+      }
+      if (!hasSP2) {
+        sp2Toggle.checked = false;
+        tileState.sp2Selected = false;
+      }
+
+      computeSources();
+      renderSources();
+      tileState.layoutMode = "3";
+      updateLayoutMode();
+
+      setMode("recording");
+    }
+
+    async function loadData() {
+      try {
+        const [evRes, recRes] = await Promise.all([
+          fetch(BACKEND_BASE_URL + "/events"),
+          fetch(BACKEND_BASE_URL + "/recordings"),
+        ]);
+
+        const evData = await evRes.json().catch(() => []);
+        const recData = await recRes.json().catch(() => []);
+
+        allEvents = Array.isArray(evData) ? evData : [];
+        allRecordings = Array.isArray(recData) ? recData : [];
+
+        renderCards();
+      } catch (e) {
+        console.error("Error loading events/recordings", e);
+        noEventsMessage.classList.remove("hidden");
+        noEventsMessage.textContent =
+          "Failed to load events. Please try again later.";
+      }
+    }
 
     computeSources();
     renderSources();
     updateLayoutMode();
+    setMode("list");
+    loadData();
   </script>
-
 </body>
 </html>
