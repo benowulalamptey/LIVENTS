@@ -285,12 +285,21 @@
     const sp1Desc = sp1DescInput.value.trim();
     const sp2Desc = sp2DescInput.value.trim();
 
-    const payload = {
-      title,
-      time: isoTime,    // always UTC ISO
-      sp1Desc,
-      sp2Desc
-    };
+    // Convert ISO time to separate date and time
+const eventDate = new Date(isoTime);
+const dateStr = eventDate.toISOString().split('T')[0];
+const timeStr = eventDate.toTimeString().split(' ')[0].substring(0, 5); // HH:MM
+
+const payload = {
+  name: title,
+  description: "", // Add empty description for now
+  date: dateStr,
+  time: timeStr,
+  sp1Enabled: !!sp1Desc, // Convert to boolean
+  sp1Description: sp1Desc,
+  sp2Enabled: !!sp2Desc, // Convert to boolean  
+  sp2Description: sp2Desc
+};
 
     try {
       const res = await fetch(API_BASE + "/events", {
