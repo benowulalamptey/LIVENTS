@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Livents Producer</title> <!-- CHANGE TO "Livents Producer" IN LIVENTS -->
+  <title>Livents Producer</title> <!-- CHANGE TO 'Livents Producer' IN LIVENTS REPO -->
   <style>
     body {
       margin: 0;
@@ -18,7 +18,7 @@
       background: #222;
       padding: 10px;
       text-align: center;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: bold;
       border-bottom: 2px solid #333;
       position: sticky;
@@ -35,13 +35,38 @@
       border: 1px solid #333;
     }
 
-    #scheduleBox input, #scheduleBox textarea {
+    #scheduleBox h3 {
+      margin-top: 0;
+    }
+
+    #scheduleBox label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    #scheduleBox input,
+    #scheduleBox textarea,
+    #scheduleBox select {
       width: 100%;
-      padding: 10px;
-      margin-bottom: 12px;
+      padding: 8px;
+      margin-bottom: 10px;
       border-radius: 6px;
       border: none;
-      font-size: 16px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    #timeRow {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    #timeRow > div {
+      flex: 1;
+      min-width: 120px;
     }
 
     #createEventBtn {
@@ -49,7 +74,7 @@
       padding: 12px;
       background: #ff9900;
       border: none;
-      font-size: 18px;
+      font-size: 16px;
       border-radius: 6px;
       cursor: pointer;
       font-weight: bold;
@@ -62,7 +87,7 @@
     /* Layout for 5-view Super Admin Screen */
     #layoutContainer {
       display: flex;
-      height: calc(100vh - 350px);
+      height: calc(100vh - 360px);
       margin: 12px;
       gap: 12px;
     }
@@ -70,6 +95,16 @@
     #p1 {
       width: 40%;
       background: #000;
+      border-radius: 6px;
+      border: 1px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: #ddd;
+      text-align: center;
+      padding: 8px;
+      box-sizing: border-box;
     }
 
     #rightPane {
@@ -86,46 +121,77 @@
       justify-content: center;
       align-items: center;
       color: #ccc;
-      font-size: 18px;
+      font-size: 15px;
       border-radius: 6px;
       border: 1px solid #333;
+      text-align: center;
+      padding: 6px;
+      box-sizing: border-box;
     }
 
-    .label {
-      font-size: 14px;
-      opacity: 0.85;
-      margin-bottom: 4px;
+    @media (max-width: 900px) {
+      #layoutContainer {
+        flex-direction: column;
+        height: auto;
+      }
+      #p1,
+      #rightPane {
+        width: 100%;
+        height: 240px;
+      }
     }
   </style>
 </head>
 <body>
 
-<div id="topBar">Livents Producer</div>  
-<!-- CHANGE THIS TEXT TO Livents Producer IN THE LIVENTS REPO -->
+<div id="topBar">Livents Producer</div>
+<!-- In Livents repo, change to: Livents Producer -->
 
 <div id="scheduleBox">
   <h3>Schedule Event</h3>
 
-  <label>Event Title</label>
-  <input id="titleInput" placeholder="Enter event title">
+  <label for="titleInput">Event Title</label>
+  <input id="titleInput" placeholder="Enter event title" />
 
-  <label>Event Time</label>
-  <input id="timeInput" type="datetime-local">
+  <label for="dateInput">Event Date</label>
+  <input id="dateInput" type="date" />
 
-  <label>Special Picture 1 Description</label>
-  <textarea id="sp1Desc" rows="2" placeholder="Describe SP1 feed..."></textarea>
+  <div id="timeRow">
+    <div>
+      <label for="timeInput">Event Time</label>
+      <input id="timeInput" type="time" />
+    </div>
+    <div>
+      <label for="timeFormatSelect">Time Format</label>
+      <select id="timeFormatSelect">
+        <option value="24">24-hour (e.g. 16:30)</option>
+        <option value="12">12-hour (e.g. 04:30 + AM/PM)</option>
+      </select>
+    </div>
+    <div id="ampmContainer">
+      <label for="ampmSelect">AM / PM</label>
+      <select id="ampmSelect">
+        <option value="AM">AM</option>
+        <option value="PM">PM</option>
+      </select>
+    </div>
+  </div>
 
-  <label>Special Picture 2 Description</label>
-  <textarea id="sp2Desc" rows="2" placeholder="Describe SP2 feed..."></textarea>
+  <label for="sp1Desc">Special Picture 1 Description</label>
+  <textarea id="sp1Desc" rows="2" placeholder="Describe Special Picture 1 feed..."></textarea>
+
+  <label for="sp2Desc">Special Picture 2 Description</label>
+  <textarea id="sp2Desc" rows="2" placeholder="Describe Special Picture 2 feed..."></textarea>
 
   <button id="createEventBtn">Create Event</button>
 </div>
 
-<!-- Producer multi-view layout -->
+<!-- Producer multi-view layout for Super Admin -->
 <div id="layoutContainer">
-
   <!-- Left large tile -->
-  <div id="p1" class="tile">Picture 1 (Admin Feed)</div>
+  <div id="p1" class="tile">
+    Picture 1 (Admin Feed)
+  </div>
 
   <!-- Right side stacked tiles -->
   <div id="rightPane">
@@ -137,47 +203,121 @@
 </div>
 
 <script>
+  // Decide API base based on title (Ludi vs Livents)
   const isLivents = document.title.toLowerCase().includes("livents");
-  const API = isLivents
+  const API_BASE = isLivents
     ? "https://livents-backend.onrender.com"
     : "https://ludi-backend.onrender.com";
 
-  const btn = document.getElementById("createEventBtn");
+  const titleInput = document.getElementById("titleInput");
+  const dateInput = document.getElementById("dateInput");
+  const timeInput = document.getElementById("timeInput");
+  const formatSelect = document.getElementById("timeFormatSelect");
+  const ampmContainer = document.getElementById("ampmContainer");
+  const ampmSelect = document.getElementById("ampmSelect");
+  const sp1DescInput = document.getElementById("sp1Desc");
+  const sp2DescInput = document.getElementById("sp2Desc");
+  const createBtn = document.getElementById("createEventBtn");
 
-  btn.onclick = async () => {
-    const title = document.getElementById("titleInput").value.trim();
-    const time = document.getElementById("timeInput").value.trim();
-    const sp1Desc = document.getElementById("sp1Desc").value.trim();
-    const sp2Desc = document.getElementById("sp2Desc").value.trim();
+  // Show/hide AM/PM dropdown depending on selected format
+  function updateAmPmVisibility() {
+    if (formatSelect.value === "12") {
+      ampmContainer.style.display = "block";
+    } else {
+      ampmContainer.style.display = "none";
+    }
+  }
 
-    if (!title || !time) {
-      alert("Event title and time required.");
+  formatSelect.addEventListener("change", updateAmPmVisibility);
+  updateAmPmVisibility();
+
+  function buildUtcIsoFromInputs() {
+    const dateVal = dateInput.value; // yyyy-mm-dd
+    const timeVal = timeInput.value; // HH:MM (browser format)
+    const fmt = formatSelect.value;  // "12" or "24"
+
+    if (!dateVal || !timeVal) {
+      return null;
+    }
+
+    const [yearStr, monthStr, dayStr] = dateVal.split("-");
+    const [hourStr, minuteStr] = timeVal.split(":");
+
+    let year = parseInt(yearStr, 10);
+    let month = parseInt(monthStr, 10);
+    let day = parseInt(dayStr, 10);
+    let hour = parseInt(hourStr, 10);
+    let minute = parseInt(minuteStr, 10) || 0;
+
+    if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day) ||
+        Number.isNaN(hour) || Number.isNaN(minute)) {
+      return null;
+    }
+
+    if (fmt === "12") {
+      const ampm = ampmSelect.value; // "AM" or "PM"
+      if (ampm === "PM" && hour < 12) {
+        hour += 12;
+      }
+      if (ampm === "AM" && hour === 12) {
+        hour = 0;
+      }
+    }
+
+    // Build local Date, then convert to UTC ISO string
+    const localDate = new Date(year, month - 1, day, hour, minute, 0);
+    return localDate.toISOString();
+  }
+
+  createBtn.addEventListener("click", async () => {
+    const title = titleInput.value.trim();
+    if (!title) {
+      alert("Please enter an event title.");
       return;
     }
 
-    const body = {
+    const isoTime = buildUtcIsoFromInputs();
+    if (!isoTime) {
+      alert("Please provide a valid date and time.");
+      return;
+    }
+
+    const sp1Desc = sp1DescInput.value.trim();
+    const sp2Desc = sp2DescInput.value.trim();
+
+    const payload = {
       title,
-      time,
+      time: isoTime,    // always UTC ISO
       sp1Desc,
       sp2Desc
     };
 
-    const res = await fetch(`${API}/event`, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(body)
-    });
+    try {
+      const res = await fetch(API_BASE + "/event", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    if (res.ok) {
-      alert("Event scheduled successfully!");
-      document.getElementById("titleInput").value = "";
-      document.getElementById("timeInput").value = "";
-      document.getElementById("sp1Desc").value = "";
-      document.getElementById("sp2Desc").value = "";
-    } else {
-      alert("Error scheduling event.");
+      const text = await res.text();
+      if (res.ok) {
+        alert("Event scheduled successfully!");
+        console.log("Backend response:", text);
+        // Reset fields
+        titleInput.value = "";
+        dateInput.value = "";
+        timeInput.value = "";
+        sp1DescInput.value = "";
+        sp2DescInput.value = "";
+      } else {
+        console.error("Schedule error:", res.status, text);
+        alert("Error scheduling event. Please check logs or try again.");
+      }
+    } catch (err) {
+      console.error("Network or server error:", err);
+      alert("Could not reach server. Please try again.");
     }
-  };
+  });
 </script>
 
 </body>
